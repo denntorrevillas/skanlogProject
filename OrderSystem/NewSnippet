@@ -1,0 +1,169 @@
+Perfect! I’ll create a **full Vue 3 component** using your script with **Axios CRUD**. It will have:
+
+* **Form** for **Add Product** (POST)
+* **Table** for **Read Products** (GET)
+* **Form** for **Update Product** (PUT)
+* **Delete** buttons in table (DELETE)
+
+Here’s a complete copy-paste component:
+
+```vue
+<template>
+  <div class="container p-4">
+    <h2>Product Management</h2>
+
+    <!-- --------- Product Form (Add / Update) --------- -->
+    <form @submit.prevent="isEditing ? updateProduct() : addProduct()" class="mb-4">
+      <div class="row g-2">
+        <div class="col-md-2">
+          <input v-model="form.name" type="text" class="form-control" placeholder="Product Name" required />
+        </div>
+        <div class="col-md-2">
+          <input v-model.number="form.price" type="number" class="form-control" placeholder="Price" required />
+        </div>
+        <div class="col-md-2">
+          <input v-model.number="form.stock" type="number" class="form-control" placeholder="Stock" required />
+        </div>
+        <div class="col-md-2">
+          <input v-model="form.category" type="text" class="form-control" placeholder="Category" required />
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary">
+            {{ isEditing ? "Update" : "Add" }}
+          </button>
+        </div>
+        <div class="col-md-2" v-if="isEditing">
+          <button type="button" class="btn btn-secondary" @click="resetForm()">Cancel</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- --------- Products Table --------- -->
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="product in products" :key="product.id">
+          <td>{{ product.id }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.price }}</td>
+          <td>{{ product.stock }}</td>
+          <td>{{ product.category }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" @click="editProduct(product)">Edit</button>
+            <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+
+// Base URL
+const API_URL = "https://localhost:7208/products";
+
+// Reactive variables
+const products = ref([]);
+const form = ref({
+  id: null,
+  name: "",
+  price: 0,
+  stock: 0,
+  category: ""
+});
+const isEditing = ref(false);
+
+// --------- GET ALL PRODUCTS ---------
+const getProducts = async () => {
+  try {
+    const res = await axios.get(API_URL);
+    products.value = res.data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+};
+
+// --------- ADD NEW PRODUCT ---------
+const addProduct = async () => {
+  try {
+    const res = await axios.post(API_URL, form.value);
+    products.value.push(res.data);
+    resetForm();
+  } catch (error) {
+    console.error("Error adding product:", error);
+  }
+};
+
+// --------- UPDATE PRODUCT ---------
+const updateProduct = async () => {
+  try {
+    await axios.put(`${API_URL}/${form.value.id}`, form.value);
+    const index = products.value.findIndex(p => p.id === form.value.id);
+    if (index !== -1) products.value[index] = { ...form.value };
+    resetForm();
+  } catch (error) {
+    console.error("Error updating product:", error);
+  }
+};
+
+// --------- DELETE PRODUCT ---------
+const deleteProduct = async (id) => {
+  try {
+    await axios.delete(`${API_URL}/${id}`);
+    products.value = products.value.filter(p => p.id !== id);
+  } catch (error) {
+    console.error("Error deleting product:", error);
+  }
+};
+
+// --------- EDIT PRODUCT ---------
+const editProduct = (product) => {
+  form.value = { ...product };
+  isEditing.value = true;
+};
+
+// --------- RESET FORM ---------
+const resetForm = () => {
+  form.value = { id: null, name: "", price: 0, stock: 0, category: "" };
+  isEditing.value = false;
+};
+
+// Fetch products on mount
+onMounted(() => {
+  getProducts();
+});
+</script>
+
+<style scoped>
+.container {
+  max-width: 900px;
+}
+</style>
+```
+
+### ✅ Features:
+
+1. **Single API URL variable** (`API_URL`) for all requests.
+2. **Add form** for POST.
+3. **Update form** uses the same form when editing.
+4. **Table** shows all products (GET).
+5. **Delete** button in table.
+6. Auto-refresh table after CRUD operations.
+
+---
+
+If you want, I can also make it **fully dynamic** so the table **updates immediately** after POST, PUT, or DELETE **without page reload**, with **inline editing** for a more modern UX.
+
+Do you want me to do that?
